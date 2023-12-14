@@ -396,3 +396,582 @@ spec:
 
 
 We have worker 3 nodes in our cluster, create a DaemonSet (name prod-pod, image=nginx) on each node 
+
+
+
+
+ 4  echo -n "admin" | base64 > username.txt
+    5  cat username.txt
+    6  echo -n "password@123" | base64 > password.txt
+    7  cat password.txt
+    8  kubectl get secrets 
+    9  kubectl create secret generic db-user-pass --from-file=./username.txt --from-file=./password.txt
+   10  kubectl get secrets 
+   11  kubectl describe secrets db-user-pass
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: n-dep
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: n-dep
+  template:
+    metadata:
+      labels:
+        app: n-dep
+    spec:
+      containers:
+      - image: nginx
+        name: nginx
+      nodeSelector:
+       kubernetes.io/hostname:
+         notin: [worker-2]
+
+
+
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: # Label the nodes appropriately, e.g., node7 for node 7
+          notin: [node7]  # Exclude node7 from deployment
+      containers:
+      - name: nginx
+        image: nginx:1.16
+
+
+
+19  g create -f example32.yml
+   20  kubectl create -f example32.yml
+   21  kubectl get cronjobs
+   22  kubectl get pods -o wide
+   23  kubectl get pods -o wide
+   24  kubectl get pods -o wide
+   25  kubectl logs cron-demo-28375471-wjfbq
+
+
+
+
+
+
+
+
+ 4  cat > example32.yml
+    5  kubectl create -f example32.yml
+    6  kubectl get ns
+    7  cat > example34.yml
+    8  kubectl create -f example34.yml
+    9  kubectl get po 
+   10  kubectl get po -n my-ns1 
+   11  kubectl get po --all-namespaces 
+   12  kubectl run nginx --image=nginx --namespace=my-ns2
+   13  kubectl get po -n my-ns2
+   14  kubectl get po
+   15  kubectl config set-context --current --namespace=my-ns2
+   16  kubectl get po
+   17  kubectl api-resources 
+   18  kubectl api-resources --namespaced=false
+   19  kubectl api-resources --namespaced=true
+   20  kubectl get deployments --all-namespaces 
+
+
+
+
+
+
+
+
+Upgrade given cluster (master and worker node) from 1.24.8-00 to 1.28.4-00. Make sure to first drain respective node prior to update 
+and make it available post update.
+
+
+upgrade demo 
+
+
+master node 
+
+   4  alias g=kubectl 
+    5  g get nodes 
+    6  sudo apt update 
+    7  g drain controlplane --ignore-daemonsets
+    8  apt-cache madison kubeadm |head
+    9  sudo apt install kubeadm=1.28.4-1.1
+   10  sudo kubeadm upgrade apply v1.28.4
+   11  sudo apt install kubelet=1.28.4-1.1
+   12  sudo systemctl restart kubelet 
+   13  g uncordon controlplane 
+   14  g get nodes 
+   15  g drain node01 --ignore-daemonsets
+   16  g get nodes 
+   17  history
+
+
+worker node 
+
+
+  3  sudo apt update 
+    4  sudo apt install kubeadm=1.28.4-1.1
+    5  sudo kubeadm upgrade node 
+    6  sudo apt install kubelet=1.28.4-1.1
+    7     
+
+logout 
+
+ 19  g get nodes
+   20  g uncordon node01
+   21  g get nodes
+
+
+
+
+
+Create a pod called delta-pod in defence namespace belonging to the development environment (env=dev)  and frontend tier (tier=front), image: nginx:1.17
+
+
+alias g=kubectl
+g create ns defense
+g run delta-pod --image=nginx:1.17 --labels env=dev,tier=front -n defense
+g get pods
+g get pods -n defense
+g describe pods delta-pod  -n defense
+
+
+ETCDCTL_API=3 etcdctl --endpoints=https://127.0.0.1:2379 \
+  --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/server.crt --key=/etc/kubernetes/pki/etcd/server.key \
+  snapshot save /root/etcd-backup.db
+
+
+
+
+
+
+
+application1.properties 
+
+
+management.endpoints.enabled-by-default=true 
+management.endpoint.info.enabled=true 
+management.security.enabled=false 
+management.endpoints.web.exposure.include=*
+
+
+
+
+
+application2.properties
+
+
+server.port= 9000
+server.servlet.context-path=/oracle 
+oracleprops.greeting= Thank you and visit again - altered 
+oracleprops.greeting1= New Data
+
+
+
+ 29  kubectl create configmap my-config-map --from-literal=key1=value1 --from-literal=key2=value2
+   30  kubectl create configmap my-config-map1 --from-literal=key1=value1 --from-literal=key2=value2
+   31  kubectl create configmap my-config-map2 --from-file=./application1.properties --from-file=./application2.properties
+   32  kubectl get cm
+   33  kubectl delete cm my-config-map
+   34  kubectl delete cm my-config-props
+
+
+
+
+apiVersion : apps/v1
+kind: Deployment
+metadata:
+  name: tomcat-deploy
+spec:
+  replicas : 4
+  selector:
+    matchLabels:
+      app: tomcat-deploy
+      environment : test
+  minReadySeconds : 10
+  strategy :
+    type : RollingUpdate 
+    rollingUpdate : 
+      maxUnavailable : 1
+      maxSurge : 1
+  template:
+    metadata:
+      labels:
+        app: tomcat-deploy
+        environment : test
+    spec:
+      containers:
+      - name: tomcat-deploy
+        image: vishymails/tomcatimage:1.0
+        # resources:
+        #   limits:
+        #     memory: "128Mi"
+        #     cpu: "500m"
+        ports:
+        - containerPort: 8080
+
+
+
+
+
+
+apiVersion : v1
+kind : ResourceQuota
+metadata : 
+  name : demo1-quota
+
+spec : 
+  hard :
+    configmaps : "10"
+    persistentvolumeclaims : "5"
+    replicationcontrollers : "21"
+    secrets : "15"
+    services : "20"
+    services.loadbalancers : "20"
+
+
+
+
+
+
+apiVersion : v1
+kind : ResourceQuota
+metadata : 
+  name : demo2-quota
+
+spec : 
+  hard :
+    pods : "4"
+    limits.cpu : "4"
+    limits.memory : "2Gi"
+    limits.ephemeral-storage : "5Gi"
+
+  scopes :
+    - Terminating
+
+    # BestEffort, NotTerminating, NotBestEffort
+
+
+
+
+
+
+
+
+apiVersion : v1
+kind : ResourceQuota
+metadata : 
+  name : demo3-quota
+
+spec : 
+  hard :
+    persistentvolumeclaims : "10"
+    bronze.storageclass.storage.k8s.io/persistentvolumeclaims : "12"
+    silver.storageclass.storage.k8s.io/persistentvolumeclaims : "15"
+
+
+
+
+
+
+
+
+
+apiVersion : v1
+kind : ResourceQuota
+metadata : 
+  name : demo4-quota
+
+spec : 
+  hard :
+    requests.nvidia.com/gpu : 3
+
+
+
+
+
+
+
+ Create a user “nec-adm". Grant nec-adm access to cluster, should have permissions to create, list, get, update, and delete pods in nec namespace 
+
+
+
+ 4  alias g=kubectl
+    5  ls
+    6  g create ns nec 
+    7  openssl genrsa -out nec-adm.key 2048
+    8  ls
+    9  openssl req -new -key nec-adm.key -out nec-adm.csr
+   10  ls
+   11  g get ns nec 
+   12  cat nec-adm.csr | base64 | tr -d "\n"
+   13  cat > necadm.yaml
+   14  g create -f necadm.yaml
+   15  g get csr 
+   16  g certificate approve nec-adm
+   17  g get csr 
+   18  cat > necrole.yaml
+   19  g create -f necrole.yaml
+   20  cat > nec-role-bind.yaml
+   21  g create -f nec-role-bind.yaml
+   22  cat > nec-role-bind.yaml
+   23  g create -f nec-role-bind.yaml
+   24  g get rolebinding.rbac.authorization.k8s.io -n nec 
+   25  g get pods -n nec --as nec-adm
+   26  g auth can-i get pods -n nec --as nec-adm
+   27  g auth can-i list  pods -n nec --as nec-adm
+   28  g auth can-i watch  pods -n nec --as nec-adm
+
+
+
+apiVersion : certificates.k8s.io/v1
+kind : CertificateSigningRequest
+metadata :
+  name : nec-adm
+spec :
+  request : LS0tLS1CRUdJTiBDRVJUSUZJQ0FURSBSRVFVRVNULS0tLS0KTUlJQy9qQ0NBZVlDQVFBd2dZUXhDekFKQmdOVkJBWVRBa2xPTVJJd0VBWURWUVFJREFsTFlYSnVZWFJoYTJFeApFakFRQmdOVkJBY01DVUpoYm1kaGJHOXlaVEVOTUFzR0ExVUVDZ3dFU1ZOU1R6RUxNQWtHQTFVRUN3d0NWa2N4CkREQUtCZ05WQkFNTUEySjJjakVqTUNFR0NTcUdTSWIzRFFFSkFSWVVkbWx6YUhsdFlXbHNjMEJuYldGcGJDNWoKYjIwd2dnRWlNQTBHQ1NxR1NJYjNEUUVCQVFVQUE0SUJEd0F3Z2dFS0FvSUJBUURXUyttMHRCZVNNN1hUTVhCQQpGZTBOMUtxbWNVbWJ3eFhrUnZINzBsc0NFSlkzZ3J5OGlQVVo2Y0d0bkthWmNGeE1oaEtuNVRmSkNldEJrVHg5ClFkTFRQMmhlTHN0Rk1RSkZVQVZaUFdVeUVFZXFhZ3J2NGhxdHpGaE9USmdLQ1dmR3JmVUdiZ0E4dGZYclJlbGEKdVBySUZ3NzY5aExid2pzNDB6WUt1MHRhVEJYMmdvMjM2SHplS3pkUTZSNWMxQWZmSzlMWUxmcWxYbG1adlQzbgpMOVRNVmRYZWVHOXFxRzlGZUdVQWNibFNpZEZkL0VwcFkxdXhnZkZOVG1VbmdzYUhZSWZsR0FGWWxZQWdUa2thCkt6T2h6bitCLzRRci9zZHJLSjdGb3BwclJBQ0VSMGJrRmZUMEo2eTVNRUloeTFJeG1TWGRmWDlkVno2VDE3K2wKZDFjckFnTUJBQUdnTkRBVkJna3Foa2lHOXcwQkNRSXhDQXdHVDNKaFkyeGxNQnNHQ1NxR1NJYjNEUUVKQnpFTwpEQXh3WVhOemQyOXlaRUF4TWpNd0RRWUpLb1pJaHZjTkFRRUxCUUFEZ2dFQkFGTGdDbGxjM2YvQStaNmFDT1hWCjUzcjZ5VGlkQkVxSVdHeGc5NXpHTEhrK25kTk9YVStWNko0ZUw4VFdKZzI4a3hUekE4V1pIa1AzVGF1WVdYYWkKZmxUNWU3Tjk5aCtacjJIbU9GaWIyM1N4UktPcE90ZnF3Nkw0eVB3U013L2VEcnpGNE5hRk8yOElFYXRMNUVtUQppQmNtYUZwMzR5QjJ1THRKRWhXQm9VK1ZPczR3b0JkNURKWVVFWUpNTUFldVM2Tmo4NktoamxLaGxtZE9QWlFQClRMZWNweCt4T0dnRU53eCs2d1VWL0QrL2VUL1M1MzhLYk9XSEw5V1owWkkyK0NZMFlhcW9qcE1YKytJQXNZVXEKekRMU2t2cDVwSUl4L0JBK0tGU1JIQ2hoNWs0RFRRenlvWjlHSklEai9zTFlZS1NTb1F5VHF5U3BlZ0pHRVdyKwprUTA9Ci0tLS0tRU5EIENFUlRJRklDQVRFIFJFUVVFU1QtLS0tLQo=
+  signerName : kubernetes.io/kube-apiserver-client
+  usages :
+    - client auth
+
+
+
+
+
+
+
+
+Cluster-specific Authentication:
+
+    For clusters integrated with an identity provider like LDAP, OIDC, or Active Directory, users are managed and authenticated by those external systems.
+    Use the respective commands/tools/APIs provided by the external authentication system to list users.
+
+
+
+
+
+
+
+
+31 - CKA exam Q31 with Solution... Kubernetes network policy
+
+
+
+echo 'apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: internal-policy
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      name: internal
+  policyTypes:
+  - Egress
+  - Ingress
+  ingress:
+    - {}
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          db: mysql
+    ports:
+    - protocol: TCP
+      port: 3306
+
+  - to:
+    - podSelector:
+        matchLabels:
+          app: payroll
+    ports:
+    - protocol: TCP
+      port: 8080
+
+  - ports:
+    - port: 53
+      protocol: UDP
+    - port: 53
+      protocol: TCP' |tee internal-policy.yaml
+
+
+
+
+
+
+Creae a persistent volume with name my-vol of capacity 10Gi and access mode ReadWriteOnce. The type of volume is hostPath and its location is /test/path
+
+
+
+
+A Kubernetes worker node, labelled with name "node-01" is in state NotReady . Investigate why this is the case, and perform any appropriate steps to bring the node to a Ready state, ensuring that any changes are made permanent.
+
+```
+$ kubectl get nodes
+$ ssh node-01
+$ sudo -i
+$ systemctl status kubelet
+$ systemctl start kubelet
+$ systemctl enable kubelet
+```
+
+
+
+
+
+Create a Pod as follows:
+
+Name: jenkins
+Using image: jenkins
+In a new Kubenetes namespace named tools 
+
+
+
+```
+To create a new namespace
+
+$ kubectl create ns tools
+
+To create a pod on the created ns
+
+$ kubectl run jenkins --image=jenkins --generator=run-pod/v1 -n tools
+```
+
+
+
+
+
+
+
+•	Reconfigure the existing deployment front-end:
+Add a port specification named http exposing port 80/tcp of the existing container nginx add a selector entry with key foo and value bar 
+•	Create a new service named front-end-svc exposing the container port http. Also use the new selector entry foo to select the service's target. 
+•	Configure the new service to also expose the individual Pods via a port on the host on which they are scheduled. 
+
+
+
+
+
+
+
+
+Set the node labelled with name:node-01 as unavailable and reschedule all the pods running on it.
+
+```
+$ kubectl get nodes -l name=node-01
+
+$ kubectl drain node01 --ignore-daemonsets=true --delete-local-data=true --force=true
+
+```
+
+
+
+
+
+
+
+We have deployed a pod called web-pod (where port 80 was exposed using service web-pod). Incoming connections (from a pod apicheck) to web-pod service are not working. 
+Identify and make certain changes on pod apicheck (re-deploy is needed) so that it can access web-pod.
+Note: A NetworkPolicy named api-allow was also created as part of the deployment.
+
+
+Run following commands to create exam like environment:
+
+echo 'kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: api-allow
+spec:
+  podSelector:
+    matchLabels:
+      app: bookstore
+      role: api
+  ingress:
+  - from:
+      - podSelector:
+          matchLabels:
+            app: bookstore' |tee  api-allow.yaml
+   
+
+ g apply -f api-allow.yaml
+  g run web-pod --image nginx --labels app=bookstore,role=api --expose --port  80
+ g run apicheck --image alpine  --labels role=api --command sleep 4800
+ 
+   
+
+ 
+
+SOLUTION 25 
+ 
+ alias g=kubectl
+ g get netpol
+ g describe netpol api-allow
+ g get pods --show-labels
+ g get svc
+ g exec -it apicheck -- wget http://web-pod
+ g get pods
+ g edit pod apicheck
+ g get pods --show-labels
+ g exec -it apicheck -- wget http://web-pod
+
+
+
+
+
+
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: myapp-pod
+  labels:
+    app.kubernetes.io/name: MyApp
+spec:
+  containers:
+  - name: myapp-container
+    image: vishymails/tomcatimage1.0
+    command: ['sh', '-c', 'echo The app is running! && sleep 3600']
+  initContainers:
+  - name: init-myservice
+    image: vishymails/tomcatimage1.0
+    command: ['sh', '-c', "until nslookup myservice.$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace).svc.cluster.local; do echo waiting for myservice; sleep 2; done"]
+  - name: init-mydb
+    image: bvishymails/tomcatimage1.0
+    command: ['sh', '-c', "until nslookup mydb.$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace).svc.cluster.local; do echo waiting for mydb; sleep 2; done"]
+
+
+
+
+
+
+
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: my-app-pod
+spec:
+  containers:
+    - name: my-app-container
+      image: my-app-image
+      livenessProbe:
+        httpGet:
+          path: /healthz
+          port: 8080
+        initialDelaySeconds: 15
+        periodSeconds: 10
