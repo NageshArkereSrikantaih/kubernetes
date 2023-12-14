@@ -1,3 +1,10 @@
++916363063645
+vishymails@gmail.com
+linked in : vishwanath b ramachandra rao
+
+
+
+
 01) #Create a new pod called admin-pod with image busybox. Allow it to be able to set system_time. Container should sleep for 3200 seconds.
 
 
